@@ -1,0 +1,25 @@
+# Virtual Environment
+fapi/
+
+
+# Python #
+*.py[cod]
+*$py.class
+__pycache__
+
+project/media
+
+# lOG FILES
+*.log
+
+# env files
+.env
+
+
+.pytest_cache
+
+.idea/
+.vscode/
+
+#docker config file
+.dockerconfig.json
