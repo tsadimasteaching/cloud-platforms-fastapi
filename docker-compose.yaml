@@ -10,7 +10,7 @@ services:
     volumes:
       - ./api:/usr/data/app
     environment:
-      - DB_URL=postgresql+asyncpg://dbuser:pass123@db:5432/cplabdb
+      - DB_URL=postgresql+asyncpg://postgres:pass123@db:5432/cplabdb
 #    env_file:
 #      - .env
     healthcheck:
@@ -31,9 +31,7 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=dbuser
       - POSTGRES_PASSWORD=pass123
-      - POSTGRES_DB=cplabdb
     healthcheck:
       test:
         - CMD-SHELL
@@ -43,6 +41,51 @@ services:
       retries: 3
     volumes:
       - 'cp-lab-vol:/var/lib/postgresql/data/'
+      - './assets/postgres/init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql'
+  keycloak:
+    image: 'quay.io/keycloak/keycloak:24.0'
+    command:
+      - start
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME_ADMIN: localhost
+#      KC_HOSTNAME: localhost
+      KC_PROXY: edge
+      KC_DB: postgres
+      KC_DB_PASSWORD: pass123
+      KC_DB_URL_HOST: db
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_SCHEMA: public
+      KC_DB_USERNAME: postgres
+      KC_HOSTNAME_STRICT: 'false'
+      KC_METRICS_ENABLED: 'true'
+      KC_HEALTH_ENABLED: 'true'
+      KC_LOG_LEVEL: ALL
+#    volumes:
+#      - ./assets/keycloak:/opt/keycloak/data/import:ro
+#    entrypoint:
+#      [
+#        "/opt/keycloak/bin/kc.sh",
+#        "start",
+#        "--import-realm",
+#        "--optimized",
+#        "--http-enabled=true",
+#        "--hostname-strict-https=false",
+#        "--hostname-strict=false",
+#        "--proxy=edge"
+#      ]
+    ports:
+      - '8080:8080'
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: 'curl --fail http://localhost:9990 || exit 1'
+      interval: 30s
+      timeout: 30s
+      retries: 3
   web:
     image: nginx:latest
     volumes:
