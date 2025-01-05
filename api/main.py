@@ -10,12 +10,17 @@ from jwt import PyJWKClient
 import jwt
 from typing import Annotated
 from fastapi.middleware.cors import CORSMiddleware
+import os
+from dotenv import load_dotenv
 
 app = FastAPI()
+
+load_dotenv()
 
 origins = [
     "http://localhost:8080",
     "http://keycloak:8080",
+    "*"
 ]
 
 app.add_middleware(
@@ -27,16 +32,17 @@ app.add_middleware(
 )
 
 oauth_2_scheme = OAuth2AuthorizationCodeBearer(
-    tokenUrl="http://keycloak:8080/realms/cloudplatforms/protocol/openid-connect/token",
-    authorizationUrl="http://keycloak:8080/realms/cloudplatforms/protocol/openid-connect/auth",
-    refreshUrl="http://keycloak:8080/realms/cloudplatforms/protocol/openid-connect/token",
+    tokenUrl= os.environ.get("TOKEN_URL", default="http://keycloak:8080/realms/cloudplatforms/protocol/openid-connect/token"),
+    authorizationUrl=os.environ.get("AUTH_URL", default="http://keycloak:8080/realms/cloudplatforms/protocol/openid-connect/auth"),
+    refreshUrl=os.environ.get("REFRESH_URL", default="http://keycloak:8080/realms/cloudplatforms/protocol/openid-connect/auth")
 )
+
 
 
 async def valid_access_token(
     access_token: Annotated[str, Depends(oauth_2_scheme)]
 ):
-    url = "http://keycloak:8080/realms/cloudplatforms/protocol/openid-connect/certs"
+    url = os.environ.get("CERT_URL", default="http://keycloak:8080/realms/cloudplatforms/protocol/openid-connect/certs")
     optional_custom_headers = {"User-agent": "custom-user-agent"}
     jwks_client = PyJWKClient(url, headers=optional_custom_headers)
 
