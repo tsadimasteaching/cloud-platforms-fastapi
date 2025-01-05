@@ -7,6 +7,13 @@ persistence:
 mode: standalone
 rootUser: rootuser
 rootPassword: rootpass123
+#environment:
+#  MINIO_IDENTITY_OPENID_SCOPES: "openid,profile,email"
+#  MINIO_BROWSER_REDIRECT_URL: https://minio.tsadimas.dns-cloud.net
+#  MINIO_SERVER_URL: https://minio.tsadimas.dns-cloud.net
+#  MINIO_IDENTITY_OPENID_CLIENT_ID: "minio"
+#  MINIO_IDENTITY_OPENID_CLIENT_SECRET: "uFAJftVXWhCzjN6Bzyj4bnepYQGWRKT4"
+#  MINIO_IDENTITY_OPENID_CONFIG_URL: https://tsadimas-sso.ddns.net/realms/cloudplatforms/.well-known/openid-configuration
 consoleIngress:
   enabled: true
   ingressClassName: nginx
@@ -18,3 +25,19 @@ consoleIngress:
         - "minio.tsadimas.dns-cloud.net"
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
+oidc:
+  enabled: true
+  configUrl: "https://tsadimas-sso.ddns.net/realms/cloudplatforms/.well-known/openid-configuration"
+  clientId: "minio"
+  clientSecret: "uFAJftVXWhCzjN6Bzyj4bnepYQGWRKT4"
+  # Provide existing client secret from the Kubernetes Secret resource, existing secret will have priority over `clientId` and/or `clientSecret``
+  existingClientSecretName: ""
+  existingClientIdKey: ""
+  existingClientSecretKey: ""
+  claimName: "policy"
+  scopes: "openid,profile,email"
+  redirectUri: "https://minio.tsadimas.dns-cloud.net/oauth_callback"
+  # Can leave empty
+  claimPrefix: ""
+  comment: ""
+  displayName: ""
